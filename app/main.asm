@@ -99,20 +99,20 @@ setup_timer_B0
             bis.w	#GIE, SR				; turn on global eables
 
 
-Mainloop:    xor.b   #BIT0,&P1OUT            ; Toggle P1.0 every 0.1s
+;Mainloop:    xor.b   #BIT0,&P1OUT            ; Toggle P1.0 every 0.1s
 
-Wait:        mov.w   #50000,R15              ; Delay to R15, inner loop
-            mov.w   #7, R14                 ; Outer loop delay
+;Wait:        mov.w   #50000,R15              ; Delay to R15, inner loop
+;            mov.w   #7, R14                 ; Outer loop delay
 
 ; almost correct, need to check on oscilliscope to verify delay == 1 sec
-call_L1:     dec.w   R14                     
-            cmp.w   #000000000h, R14        ; check if R14 == 0
-            jz     Mainloop                 ; if yes, then jump back to main
+;call_L1:     dec.w   R14                     
+;            cmp.w   #000000000h, R14        ; check if R14 == 0
+;            jz     Mainloop                 ; if yes, then jump back to main
             
-L1:          dec.w   R15                     ; Decrement R15
-            jnz     L1                      ; Delay over?
-            jmp     call_L1                 ; Again
-            NOP
+;L1:          dec.w   R15                     ; Decrement R15
+;            jnz     L1                      ; Delay over?
+;            jmp     call_L1                 ; Again
+;            NOP
 
 ;------------------------------------------------------------------------------
 ; Interrupt Service Routine 
