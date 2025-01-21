@@ -79,17 +79,55 @@ RESET       mov.w   #__STACK_END,SP         ; Initialize stack pointer
 StopWDT     mov.w   #WDTPW+WDTHOLD,&WDTCTL  ; Stop WDT
 SetupP1     bic.b   #BIT0,&P1OUT            ; Clear P1.0 output
             bis.b   #BIT0,&P1DIR            ; P1.0 output
+            xor.b   #BIT0, &P1OUT
+
+setup_P6    bic.b   #BIT6, &P6OUT           ; clear P6.6
+            bis.b   #BIT6, &P6DIR           ; P6.6 as output
+
+
+setup_timer_B0
+            bis.w	#TBCLR, &TB0CTL				; clear timer and dividers
+	        bis.w	#TBSSEL__ACLK, &TB0CTL		; select ACLK as timer source
+	        bis.w	#MC__CONTINUOUS, &TB0CTL	; choose continuous counting
+	        bis.w	#CNTL__12, &TB0CTL			; timer to toggle LED ~ 1sec
+	        bis.w	#ID__8, &TB0CTL				; ^^
+	        bis.w	#TBIE, &TB0CTL				; enable overflow interupt
+	        bic.w	#TBIFG, &TB0CTL				; clear interupt flag
+
             bic.w   #LOCKLPM5,&PM5CTL0       ; Unlock I/O pins
+            bis.w	#GIE, SR				; turn on global eables
 
 Mainloop    xor.b   #BIT0,&P1OUT            ; Toggle P1.0 every 0.1s
-Wait        mov.w   #50000,R15              ; Delay to R15
+
+Wait        mov.w   #24000, R15              ; Delay to R15, inner loop
+            mov.w   #7, R14                 ; Outer loop delay
+
+; almost correct, need to check on oscilliscope to verify delay == 1 sec
+call_L1     dec.w   R14                     
+            cmp.w   #000000000h, R14        ; check if R14 == 0
+            jz     Mainloop                 ; if yes, then jump back to main
+            
 L1          dec.w   R15                     ; Decrement R15
             jnz     L1                      ; Delay over?
-            jmp     Mainloop                ; Again
+            jmp     call_L1                 ; Again
             NOP
+
+
+;------------------------------------------------------------------------------
+; Interrupt Service Routine 
+;------------------------------------------------------------------------------
+
+timer_B0_1s:
+            xor.b   #BIT6, &P6OUT           ; toggle LED2 (green)
+            bic.w   #TBIFG, &TB0CTL         ; clear TB0 flag
+            reti
 ;------------------------------------------------------------------------------
 ;           Interrupt Vectors
 ;------------------------------------------------------------------------------
             .sect   RESET_VECTOR            ; MSP430 RESET Vector
             .short  RESET                   ;
+            
+            .sect 	".int42"                ; Timer B0 interrupt vector
+            .short 	timer_B0_1s             ; set interrupt vector to point to timer_B0_1s
+            
             .end
