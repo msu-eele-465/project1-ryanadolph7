@@ -84,8 +84,6 @@ SetupP1     bic.b   #BIT0,&P1OUT            ; Clear P1.0 output
 setup_P6    bic.b   #BIT6, &P6OUT           ; clear P6.6
             bis.b   #BIT6, &P6DIR           ; P6.6 as output
 
-            
-
 
 setup_timer_B0
             bis.w	#TBCLR, &TB0CTL				; clear timer and dividers
