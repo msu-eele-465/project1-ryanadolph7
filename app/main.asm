@@ -98,7 +98,20 @@ setup_timer_B0
             bic.w   #LOCKLPM5,&PM5CTL0       ; Unlock I/O pins
             bis.w	#GIE, SR				; turn on global eables
 
+Mainloop:    xor.b   #BIT0,&P1OUT            ; Toggle P1.0 every 0.1s
 
+Wait:        mov.w   #50000,R15              ; Delay to R15, inner loop
+            mov.w   #7, R14                 ; Outer loop delay
+
+; almost correct, need to check on oscilliscope to verify delay == 1 sec
+call_L1:     dec.w   R14                     
+            cmp.w   #000000000h, R14        ; check if R14 == 0
+            jz     Mainloop                 ; if yes, then jump back to main
+            
+;L1:          dec.w   R15                     ; Decrement R15
+            jnz     L1                      ; Delay over?
+            jmp     call_L1                 ; Again
+            NOP
 
 
 ;------------------------------------------------------------------------------
@@ -115,7 +128,7 @@ timer_B0_1s:
             .sect   RESET_VECTOR            ; MSP430 RESET Vector
             .short  RESET                   ;
             
-            .sect 	".int42"
-            .short 	timer_B0_1s
+            .sect 	".int42"                ; Timer B0 interrupt vector
+            .short 	timer_B0_1s             ; set interrupt vector to point to timer_B0_1s
             
             .end
